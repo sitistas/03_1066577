@@ -1,40 +1,33 @@
-import java.util.Random;
-import java.util.UUID;
-
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Scanner;
+import java.util.UUID;
+
 @SuppressWarnings({"BusyWait", "InfiniteLoopStatement"})
-public class MqttService implements  MqttCallback{
+public class MqttService implements MqttCallback {
+    public static final String TOPIC = "03_1066577/test";
+    static final String M2MIO_THING = UUID.randomUUID().toString();
+    static final String BROKER_URL = "tcp://test.mosquitto.org:1883";
+    static final Boolean subscriber = true;
+    //    1883: Unauthenticated & unencrypted
+    static final Boolean publisher = true;
+    private static final Logger log = LoggerFactory.getLogger(MqttService.class);
+    //    private final Random rnd = new Random();
     MqttClient myClient;
     MqttConnectOptions connOpt;
 
-    static final String M2MIO_THING = UUID.randomUUID().toString();
-    static final String BROKER_URL = "tcp://test.mosquitto.org:1883";
-//    1883: Unauthenticated & unencrypted
-
-    static final Boolean subscriber = true;
-    static final Boolean publisher = true;
-
-
-    private final Random rnd = new Random();
-
-    private static final Logger log = LoggerFactory.getLogger(MqttService.class);
-    public static final String TOPIC = "grupatras/lab/engine/temperature";
-
+    /**
+     * MAIN
+     */
+    public static void main(String[] args) {
+        MqttService MS = new MqttService();
+        MS.runClient();
+    }
 
     /**
-     *
      * connectionLost This callback is invoked upon losing the MQTT connection.
-     *
      */
     public void connectionLost(Throwable t) {
         log.info("Connection lost!");
@@ -42,20 +35,16 @@ public class MqttService implements  MqttCallback{
     }
 
     /**
-     *
      * deliveryComplete This callback is invoked when a message published by this
      * client is successfully received by the broker.
-     *
      */
     public void deliveryComplete(IMqttDeliveryToken token) {
 
     }
 
     /**
-     *
      * messageArrived This callback is invoked when a message is received on a
      * subscribed topic.
-     *
      */
     public void messageArrived(String topic, MqttMessage message) {
         log.info("\n");
@@ -66,23 +55,9 @@ public class MqttService implements  MqttCallback{
         log.info("\n");
     }
 
-
-
     /**
-     *
-     * MAIN
-     *
-     */
-    public static void main(String[] args) {
-        MqttService MS = new MqttService();
-        MS.runClient();
-    }
-
-    /**
-     *
      * runClient The main functionality of this simple example. Create a MQTT
      * client, connect to broker, pub/sub, disconnect.
-     *
      */
     public void runClient() {
         // setup MQTT Client
@@ -124,30 +99,33 @@ public class MqttService implements  MqttCallback{
 
         // publish messages if publisher
         if (publisher) {
-            while (true) {
-                double temp = 80 + rnd.nextDouble() * 20.0;
-                String val = String.format("T:%04.2f", temp);
-                String pubMsg = "{\"value\":" + val + "}";
-                int pubQoS = 0;
-                MqttMessage message = new MqttMessage(pubMsg.getBytes());
-                message.setQos(pubQoS);
-                message.setRetained(false);
+//            while (true) {
 
-                // Publish the message
-                log.info("Publishing to topic \"" + topic + "\" qos " + pubQoS + "\" value " + val);
+//          Get message from the user
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Enter message:\n");
+            String pubMsg = sc.nextLine();
 
+            int pubQoS = 0;
+            MqttMessage message = new MqttMessage(pubMsg.getBytes());
+            message.setQos(pubQoS);
+            message.setRetained(false);
 
-                MqttDeliveryToken token;
-                try {
-                    // publish message to broker
-                    token = topic.publish(message);
-                    // Wait until the message has been delivered to the broker
-                    token.waitForCompletion();
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            // Publish the message
+            log.info("Publishing to topic \"" + topic + "\" qos " + pubQoS);
+//
+//
+            MqttDeliveryToken token;
+            try {
+                // publish message to broker
+                token = topic.publish(message);
+                // Wait until the message has been delivered to the broker
+                token.waitForCompletion();
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+//            }
         }
 
         // disconnect

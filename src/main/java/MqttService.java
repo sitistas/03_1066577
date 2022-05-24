@@ -1,17 +1,16 @@
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Scanner;
 import java.util.UUID;
 
-@SuppressWarnings({"BusyWait", "InfiniteLoopStatement"})
+//@SuppressWarnings({"BusyWait", "InfiniteLoopStatement"})
 public class MqttService implements MqttCallback {
     public static final String TOPIC = "03_1066577/test";
     static final String M2MIO_THING = UUID.randomUUID().toString();
     static final String BROKER_URL = "tcp://test.mosquitto.org:1883";
-    static final Boolean subscriber = true;
     //    1883: Unauthenticated & unencrypted
+    static final Boolean subscriber = true;
     static final Boolean publisher = true;
     private static final Logger log = LoggerFactory.getLogger(MqttService.class);
     //    private final Random rnd = new Random();
@@ -64,8 +63,6 @@ public class MqttService implements MqttCallback {
         connOpt = new MqttConnectOptions();
         connOpt.setCleanSession(true);
         connOpt.setKeepAliveInterval(30);
-// connOpt.setUserName(M2MIO_USERNAME);
-// connOpt.setPassword(M2MIO_PASSWORD_MD5.toCharArray());
 
         // Connect to Broker
         try {
@@ -88,9 +85,7 @@ public class MqttService implements MqttCallback {
                 int subQoS = 0;
                 myClient.subscribe(myTopic, subQoS);
                 if (!publisher) {
-                    while (true) {
                         Thread.sleep(1000);
-                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
